@@ -9,13 +9,15 @@ return array(
 	// autoloading model and component classes
 	'import'=>array(
 		'application.models.*',
-		'application.components.*',
+        'application.components.*',
         'application.modules.rights.*',
-        'application.modules.rights.components.*'
+        'application.modules.rights.components.*',
+        'application.extensions.portal.*',
 	),
 
 	'modules'=>array(
         'rights'=>array(),
+        'itsapp',
 	),
 
 	// application components
