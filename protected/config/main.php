@@ -1,13 +1,7 @@
 <?php
-
-// uncomment the following to define a path alias
-// Yii::setPathOfAlias('local','path/to/local-folder');
-
-// This is the main Web application configuration. Any writable
-// CWebApplication properties can be configured here.
 return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
-	'name'=>'My Web Application',
+	'name'=>'IT Source Corp Portal',
 
 	// preloading 'log' component
 	'preload'=>array('log'),
@@ -16,27 +10,27 @@ return array(
 	'import'=>array(
 		'application.models.*',
 		'application.components.*',
+        'application.modules.rights.*',
+        'application.modules.rights.components.*'
 	),
 
 	'modules'=>array(
-		// uncomment the following to enable the Gii tool
-		/*
-		'gii'=>array(
-			'class'=>'system.gii.GiiModule',
-			'password'=>'password',
-			// If removed, Gii defaults to localhost only. Edit carefully to taste.
-			'ipFilters'=>false,
-		),
-        */
-		
+        'rights'=>array(),
 	),
 
 	// application components
 	'components'=>array(
-		'user'=>array(
-			// enable cookie-based authentication
-			'allowAutoLogin'=>true,
-		),
+
+        'authManager'=>array(
+            'class'=>'RDbAuthManager',
+            'connectionID'=>'db',
+
+        ),
+        'user'=>array(
+            'class'=>'RWebUser',
+            'allowAutoLogin'=>true
+        ),
+        
 		// uncomment the following to enable URLs in path-format
 		'urlManager'=>array(
 			'urlFormat'=>'path',
@@ -47,11 +41,7 @@ return array(
 				'<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
 			),
 		),
-        /*
-		'db'=>array(
-			'connectionString' => 'sqlite:'.dirname(__FILE__).'/../data/testdrive.db',
-		),
-        */
+
 		'db'=>array(
 			'connectionString' => 'mysql:host='.DB_HOST.';dbname=' .DB_NAME,
 			'emulatePrepare' => true,
@@ -83,8 +73,9 @@ return array(
 	// application-level parameters that can be accessed
 	// using Yii::app()->params['paramName']
 	'params'=>array(
-		// this is used in contact page
-        'adminEmail'=>ADMIN_MAIL,
-		'contactEmail'=>CONTACT_MAIL,
+        'email'=>array(
+            'admin' => ADMIN_MAIL,
+            'contact' => CONTACT_MAIL,
+        ),
 	),
 );
