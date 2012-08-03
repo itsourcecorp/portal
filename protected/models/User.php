@@ -4,16 +4,30 @@
  * This is the model class for table "user".
  *
  * The followings are the available columns in table 'user':
- * @property string $id
+ * @property integer $id
+ * @property integer $group
+ * @property integer $managed_by
+ * @property string $firstname
+ * @property string $lastname
  * @property string $email
- * @property string $username
  * @property string $password
+ * @property string $phone
+ * @property string $mobile
  * @property string $created
+ * @property string $cookie
+ * @property string $session
+ * @property string $ip
+ * @property integer $hardware_id
+ * @property string $security_question
+ * @property string $security_answer
  * @property integer $status
- * @property integer $activation_code
+ * @property integer $ext
+ * @property integer $picture_id
+ * @property integer $notification
  */
 class User extends CActiveRecord
 {
+    public $repeat_password;
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -23,7 +37,7 @@ class User extends CActiveRecord
 	{
 		return parent::model($className);
 	}
-	
+
 	/**
 	 * @return string the associated database table name
 	 */
@@ -31,7 +45,9 @@ class User extends CActiveRecord
 	{
 		return 'user';
 	}
-
+    public function getSpecialRoles(){
+        return array('Root','Admin');
+    }
 	/**
 	 * @return array validation rules for model attributes.
 	 */
@@ -40,15 +56,41 @@ class User extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('email, username, password', 'required'),
-			array('status, activation_code', 'numerical', 'integerOnly'=>true),
-			array('email, username, password', 'length', 'max'=>45),
+			array('firstname, lastname, email,password,security_question,security_answer', 'required','skipOnError'=>true),
+            array('repeat_password','passMatch'),
+            array('email','unique'),
+			array('group, managed_by, hardware_id, status, ext, picture_id, notification', 'numerical', 'integerOnly'=>true),
+			array('firstname, lastname, email', 'length', 'max'=>255),
+			array('password', 'length', 'max'=>40),
+			array('phone, mobile', 'length', 'max'=>15),
+			array('cookie, session', 'length', 'max'=>100),
+			array('ip', 'length', 'max'=>20),
+			array('security_question', 'length', 'max'=>64),
+			array('security_answer', 'length', 'max'=>50),
+			array('created', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, email, username, password, created, status, activation_code', 'safe', 'on'=>'search'),
+			array('id, group, managed_by, firstname, lastname, email, password, phone, mobile, created, cookie, session, ip, hardware_id, security_question, security_answer, status, ext, picture_id, notification', 'safe', 'on'=>'search'),
 		);
 	}
 
+     public function passMatch($attribute,$params){
+            //echo $this->repeat_password;
+            //die();
+                        $user = User::model()->findByAttributes(array('email'=>$this->email));
+
+            if($attribute=='password'){
+  
+            }elseif($attribute==='repeat_password'){
+               if($this->password!=$this->repeat_password){
+                    $this->__unset('repeat_password');               
+                    $this->addError('repeat_password','Passwords Must Match');
+                }else{
+                    $this->clearErrors($attribute);
+                } 
+            }
+            
+    }
 	/**
 	 * @return array relational rules.
 	 */
@@ -67,12 +109,26 @@ class User extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
+			'group' => 'Group',
+			'managed_by' => 'Managed By',
+            'firstname' => 'Firstname',
+			'repeat_password' => 'Confirm Password',
+			'lastname' => 'Lastname',
 			'email' => 'Email',
-			'username' => 'Username',
 			'password' => 'Password',
+			'phone' => 'Phone',
+			'mobile' => 'Mobile',
 			'created' => 'Created',
+			'cookie' => 'Cookie',
+			'session' => 'Session',
+			'ip' => 'Ip',
+			'hardware_id' => 'Hardware',
+			'security_question' => 'Security Question',
+			'security_answer' => 'Security Answer',
 			'status' => 'Status',
-			'activation_code' => 'Activation Code',
+			'ext' => 'Ext',
+			'picture_id' => 'Picture',
+			'notification' => 'Notification',
 		);
 	}
 
@@ -87,15 +143,57 @@ class User extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('group',$this->group);
+		$criteria->compare('managed_by',$this->managed_by);
+		$criteria->compare('firstname',$this->firstname,true);
+		$criteria->compare('lastname',$this->lastname,true);
 		$criteria->compare('email',$this->email,true);
-		$criteria->compare('username',$this->username,true);
+		$criteria->compare('password',$this->password,true);
+		$criteria->compare('phone',$this->phone,true);
+		$criteria->compare('mobile',$this->mobile,true);
 		$criteria->compare('created',$this->created,true);
+		$criteria->compare('cookie',$this->cookie,true);
+		$criteria->compare('session',$this->session,true);
+		$criteria->compare('ip',$this->ip,true);
+		$criteria->compare('hardware_id',$this->hardware_id);
+		$criteria->compare('security_question',$this->security_question,true);
+		$criteria->compare('security_answer',$this->security_answer,true);
 		$criteria->compare('status',$this->status);
-		$criteria->compare('activation_code',$this->activation_code);
+		$criteria->compare('ext',$this->ext);
+		$criteria->compare('picture_id',$this->picture_id);
+		$criteria->compare('notification',$this->notification);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
 	}
+    public function getTenantRoles($tenant){
+        $roles = Yii::app()->authManager->getAuthItems(2,$this->id);
+        $tenantroles = array();
+        foreach($roles as $role){
+            $role = explode('.',$role->name);
+            if(count($role)>1 AND $role[0]==$tenant){
+                $tenantroles[] = $role[1];
+            }
+            
+        }
+        
+        
+        return $tenantroles;
+    }
+    public function getQuestions(){
+        return array(
+        'What is your oldest sibling\'s middle name?'=>
+        'What is your oldest sibling\'s middle name?',
+        'What was the last name of your third grade teacher?'=>
+        'What was the last name of your third grade teacher?',
+        'What is your maternal grandmother\'s maiden name?'=>
+        'What is your maternal grandmother\'s maiden name?',
+        'In what city or town was your first job?'=>
+        'In what city or town was your first job?',
+        'What is the name of a college you applied to but didn\'t attend?'=>
+        'What is the name of a college you applied to but didn\'t attend?');
+   }
+
 }
