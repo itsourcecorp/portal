@@ -5,3 +5,11 @@ RewriteCond %{REQUEST_FILENAME} !-d
 
 # otherwise forward it to index.php
 RewriteRule . index.php
+
+# increase upload size of files
+php_value post_max_size 100M
+php_value upload_max_filesize 100M
+
+# Override PHP settings. More in sites/default/settings.php
+# but the following cannot be changed at runtime.
+php_value memory_limit -1
