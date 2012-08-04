@@ -114,19 +114,14 @@ Yii::import('zii.widgets.CMenu');
         }
     }
     protected function parseUrl($url){
-        //return true;
-        $url = CHtml::normalizeUrl($url);
-        $pathinfo = array();
-        if(is_array($url)){
-            foreach($url as $item){
-                $pathinfo = array_merge($pathinfo, explode('/',$item));    
-            }
-        }else{
-            $pathinfo = array_merge($pathinfo, explode('/',$url));  
-        }
         
+        //modified from beta///////////JS 2012-08-03
+        $url = CHtml::normalizeUrl($url);
+        preg_match('/itsapp[^?]/', $url, $matches);
+        $url =  substr($matches[0],0,-1);
+        $pathinfo = explode('/',$url);        
         $base = array_shift($pathinfo);
-        $pathinfo = array_slice($pathinfo,1);
+        ///////////////////////////////////////////
         $request = array();
         if(!empty(Yii::app()->params['tenant'])){
                 $request['tenant']=Yii::app()->params['tenant']->id;
